@@ -1,0 +1,32 @@
+[project]
+name = "adk"
+version = "0.1.0"
+description = "AI Assistant Backend - Google ADK Multi-Agent System"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.17.2",
+    "fastapi>=0.128.0",
+    "google-adk>=1.18.0",
+    "google-api-python-client>=2.187.0",
+    "google-auth>=2.47.0",
+    "httpx>=0.28.0",
+    "psycopg2-binary>=2.9.11",
+    "pydantic>=2.12.5",
+    "pydantic-settings>=2.12.0",
+    "python-dotenv>=1.2.1",
+    "sqlalchemy>=2.0.45",
+    "sse-starlette>=3.1.2",
+    "uvicorn>=0.40.0",
+]
+
+[project.scripts]
+dev = "uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000"
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]

@@ -1,32 +1,32 @@
-"use client";
+'use client'
 
-import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
-import { ChatContainer } from "@/components/chat/chat-container";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { LogOut, User } from "lucide-react";
-import { signOut } from "next-auth/react";
+import { useSession } from 'next-auth/react'
+import { redirect } from 'next/navigation'
+import { ChatContainer } from '@/components/chat/chat-container'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
+import { LogOut, User } from 'lucide-react'
+import { signOut } from 'next-auth/react'
 
 export default function Home() {
-  const { data: session, status } = useSession();
+  const { data: session, status } = useSession()
 
-  if (status === "loading") {
+  if (status === 'loading') {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="flex h-screen items-center justify-center">
+        <div className="border-primary h-8 w-8 animate-spin rounded-full border-b-2"></div>
       </div>
-    );
+    )
   }
 
   if (!session) {
-    redirect("/login");
+    redirect('/login')
   }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex h-screen flex-col">
       {/* Header */}
-      <header className="border-b bg-background px-4 py-3 flex items-center justify-between">
+      <header className="bg-background flex items-center justify-between border-b px-4 py-3">
         <h1 className="text-xl font-semibold">AI 助理</h1>
 
         <div className="flex items-center gap-3">
@@ -37,15 +37,9 @@ export default function Home() {
                 <User className="h-4 w-4" />
               </AvatarFallback>
             </Avatar>
-            <span className="text-sm font-medium hidden sm:inline">
-              {session.user?.name}
-            </span>
+            <span className="hidden text-sm font-medium sm:inline">{session.user?.name}</span>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => signOut({ callbackUrl: "/login" })}
-          >
+          <Button variant="ghost" size="icon" onClick={() => signOut({ callbackUrl: '/login' })}>
             <LogOut className="h-4 w-4" />
           </Button>
         </div>
@@ -56,5 +50,5 @@ export default function Home() {
         <ChatContainer />
       </main>
     </div>
-  );
+  )
 }

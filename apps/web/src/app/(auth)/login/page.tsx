@@ -1,26 +1,20 @@
-"use client";
+'use client'
 
-import { signIn } from "next-auth/react";
-import { Button } from "@/components/ui/button";
+import { signIn } from 'next-auth/react'
+import { Button } from '@/components/ui/button'
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted">
-      <div className="w-full max-w-md p-8 space-y-8 bg-card rounded-xl shadow-lg border">
+    <div className="from-background to-muted flex min-h-screen items-center justify-center bg-gradient-to-br">
+      <div className="bg-card w-full max-w-md space-y-8 rounded-xl border p-8 shadow-lg">
         <div className="text-center">
           <h1 className="text-3xl font-bold">AI 助理</h1>
-          <p className="mt-2 text-muted-foreground">
-            登入以開始使用智慧助理
-          </p>
+          <p className="text-muted-foreground mt-2">登入以開始使用智慧助理</p>
         </div>
 
         <div className="space-y-4">
-          <Button
-            onClick={() => signIn("google", { callbackUrl: "/" })}
-            className="w-full"
-            size="lg"
-          >
-            <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+          <Button onClick={() => signIn('google', { callbackUrl: '/' })} className="w-full" size="lg">
+            <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
               <path
                 fill="currentColor"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -42,10 +36,8 @@ export default function LoginPage() {
           </Button>
         </div>
 
-        <p className="text-center text-sm text-muted-foreground">
-          登入即表示您同意我們的服務條款和隱私政策
-        </p>
+        <p className="text-muted-foreground text-center text-sm">登入即表示您同意我們的服務條款和隱私政策</p>
       </div>
     </div>
-  );
+  )
 }

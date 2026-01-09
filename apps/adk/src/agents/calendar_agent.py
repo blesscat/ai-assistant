@@ -12,6 +12,11 @@ from ..tools.calendar_tools import (
     update_calendar_event,
     delete_calendar_event,
 )
+from ..tools.datetime_tools import (
+    get_current_time,
+    calculate_relative_time,
+    get_time_range,
+)
 from ..db.session import get_db
 from ..services.token_service import TokenService
 from ..config import settings
@@ -27,6 +32,13 @@ async def before_calendar_tool(
     tool: BaseTool, args: dict, ctx: ToolContext
 ) -> dict | None:
     """在呼叫 calendar tool 前自動注入 access_token"""
+    # 只對需要 access_token 的工具注入（calendar 相關工具）
+    tool_name = tool.name if hasattr(tool, 'name') else str(tool)
+
+    # 時間工具不需要 access_token
+    if any(keyword in tool_name for keyword in ['time', 'datetime', 'get_current', 'calculate', 'get_time_range']):
+        return args
+
     # 從 context 取得 user_id
     user_id = ctx.user_id
 
@@ -84,6 +96,11 @@ calendar_agent = LlmAgent(
     description="行事曆管理 Agent，處理 Google Calendar 操作",
     instruction=load_instruction("calendar_agent.md"),
     tools=[
+        # 時間工具
+        FunctionTool(get_current_time),
+        FunctionTool(calculate_relative_time),
+        FunctionTool(get_time_range),
+        # Calendar 工具
         FunctionTool(list_calendar_events),
         FunctionTool(create_calendar_event),
         FunctionTool(update_calendar_event),

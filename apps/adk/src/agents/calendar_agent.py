@@ -29,7 +29,7 @@ def load_instruction(filename: str) -> str:
 
 
 async def before_calendar_tool(
-    tool: BaseTool, args: dict, ctx: ToolContext
+    tool: BaseTool, args: dict, tool_context: ToolContext
 ) -> dict | None:
     """在呼叫 calendar tool 前自動注入 access_token"""
     # 只對需要 access_token 的工具注入（calendar 相關工具）
@@ -40,7 +40,7 @@ async def before_calendar_tool(
         return args
 
     # 從 context 取得 user_id
-    user_id = ctx.user_id
+    user_id = tool_context.user_id
 
     # 從資料庫取得 access_token
     db = next(get_db())
@@ -66,10 +66,10 @@ async def before_calendar_tool(
 
 
 async def on_calendar_tool_error(
-    tool: BaseTool, args: dict, ctx: ToolContext, error: Exception
+    tool: BaseTool, args: dict, tool_context: ToolContext, error: Exception
 ) -> dict:
     """處理 calendar tool 錯誤"""
-    user_id = ctx.user_id
+    user_id = tool_context.user_id
 
     # 檢查是否為授權問題
     error_str = str(error)

@@ -44,14 +44,11 @@ export function ChatContainer() {
     }
   }, [currentConversationId, messages.length, addConversation])
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!input.trim() || isLoading) return
-    sendMessage({ text: input })
+  const handleSendMessage = (content: string, attachments?: { type: 'image' | 'audio'; data: string }[]) => {
+    // 先清除 input（重要：無論送出成功與否都清除，避免重複送出）
     setInput('')
-  }
 
-  const handleSendMessage = async (content: string, attachments?: { type: 'image' | 'audio'; data: string }[]) => {
+    // 檢查是否有內容
     if (!content.trim() && !attachments?.length) return
 
     // 建構多模態訊息
@@ -71,20 +68,14 @@ export function ChatContainer() {
       }
     }
 
+    // 送出訊息
     sendMessage({ text: content })
-    setInput('')
   }
 
   return (
     <div className="flex h-full flex-col">
       <MessageList messages={messages} isLoading={isLoading} />
-      <ChatInput
-        input={input}
-        onInputChange={setInput}
-        onSubmit={handleSubmit}
-        onSendMessage={handleSendMessage}
-        isLoading={isLoading}
-      />
+      <ChatInput input={input} onInputChange={setInput} onSendMessage={handleSendMessage} isLoading={isLoading} />
     </div>
   )
 }

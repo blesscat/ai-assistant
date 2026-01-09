@@ -10,12 +10,11 @@ import { VoiceRecorder } from './voice-recorder'
 interface ChatInputProps {
   input: string
   onInputChange: (value: string) => void
-  onSubmit: (e: FormEvent<HTMLFormElement>) => void
   onSendMessage: (content: string, attachments?: { type: 'image' | 'audio'; data: string }[]) => void
   isLoading: boolean
 }
 
-export function ChatInput({ input, onInputChange, onSubmit, onSendMessage, isLoading }: ChatInputProps) {
+export function ChatInput({ input, onInputChange, onSendMessage, isLoading }: ChatInputProps) {
   const [attachments, setAttachments] = useState<{ type: 'image' | 'audio'; data: string; preview?: string }[]>([])
   const [showFileUpload, setShowFileUpload] = useState(false)
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false)
@@ -23,12 +22,17 @@ export function ChatInput({ input, onInputChange, onSubmit, onSendMessage, isLoa
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (isLoading) return
 
+    // 如果正在載入或沒有內容，不送出
+    if (isLoading || (!input.trim() && attachments.length === 0)) return
+
+    // 送出訊息
     onSendMessage(
       input,
       attachments.map((a) => ({ type: a.type, data: a.data }))
     )
+
+    // 清除附件（input 由 parent 的 onSendMessage 清除）
     setAttachments([])
   }
 

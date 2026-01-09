@@ -114,8 +114,8 @@ export function ChatInput({ input, onInputChange, onSendMessage, isLoading }: Ch
           <VoiceRecorder onRecord={handleVoiceRecord} onClose={() => setShowVoiceRecorder(false)} />
         )}
 
-        <form onSubmit={handleSubmit} className="flex items-end gap-2">
-          <div className="flex gap-1">
+        <form onSubmit={handleSubmit} className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <Button
               type="button"
               variant="ghost"

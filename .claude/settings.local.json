@@ -15,7 +15,9 @@
       "Bash(pnpm run build)",
       "Bash(cat:*)",
       "Bash(ls:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git ls-tree:*)"
     ]
   }
 }

@@ -45,6 +45,12 @@ export function ChatInput({ input, onInputChange, onSendMessage, isLoading }: Ch
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
+      // 檢查是否正在使用輸入法（中文、日文等）
+      // 如果是，不要攔截 Enter，讓輸入法完成選字
+      if (e.nativeEvent.isComposing || e.isComposing) {
+        return
+      }
+
       e.preventDefault()
       const form = e.currentTarget.form
       if (form) {

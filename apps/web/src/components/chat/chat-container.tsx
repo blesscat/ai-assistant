@@ -45,8 +45,7 @@ export function ChatContainer() {
   }, [currentConversationId, messages.length, addConversation])
 
   const handleSendMessage = (content: string, attachments?: { type: 'image' | 'audio'; data: string }[]) => {
-    // 先清除 input（重要：無論送出成功與否都清除，避免重複送出）
-    setInput('')
+    // 注意：input 已經在 ChatInput 中被清除了，這裡不需要再清除
 
     // 檢查是否有內容
     if (!content.trim() && !attachments?.length) return

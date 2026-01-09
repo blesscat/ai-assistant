@@ -23,17 +23,24 @@ export function ChatInput({ input, onInputChange, onSendMessage, isLoading }: Ch
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    // 如果正在載入或沒有內容，不送出
-    if (isLoading || (!input.trim() && attachments.length === 0)) return
+    // 先儲存當前值
+    const currentInput = input
+    const currentAttachments = [...attachments]
+
+    // 立即清除 input 和附件（提供即時反饋）
+    onInputChange('')
+    setAttachments([])
+
+    // 如果正在載入或沒有內容，清除後就結束
+    if (isLoading || (!currentInput.trim() && currentAttachments.length === 0)) {
+      return
+    }
 
     // 送出訊息
     onSendMessage(
-      input,
-      attachments.map((a) => ({ type: a.type, data: a.data }))
+      currentInput,
+      currentAttachments.map((a) => ({ type: a.type, data: a.data }))
     )
-
-    // 清除附件（input 由 parent 的 onSendMessage 清除）
-    setAttachments([])
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

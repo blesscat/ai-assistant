@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from zoneinfo import ZoneInfo
 
 
@@ -131,7 +131,7 @@ def calculate_relative_time(
 
 def get_time_range(
     start_relative: str,
-    end_relative: str = None,
+    end_relative: Optional[str] = None,
     timezone: str = "Asia/Taipei"
 ) -> Dict[str, Any]:
     """

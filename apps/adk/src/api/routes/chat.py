@@ -12,6 +12,7 @@ from google.adk.sessions import InMemorySessionService
 from google.genai import types
 
 from ...db.session import get_db
+from ...db.models import User
 from ...agents.root_agent import root_agent
 from ...services.token_service import TokenService
 
@@ -49,6 +50,23 @@ async def chat(request: ChatRequest, db: Session = Depends(get_db)):
         try:
             print("[DEBUG] Starting generate()")
 
+            # 查詢用戶資訊
+            user = None
+            if request.user_id:
+                try:
+                    # 嘗試將 user_id 轉換為 UUID
+                    import uuid as uuid_lib
+                    user_uuid = uuid_lib.UUID(request.user_id)
+                    user = db.query(User).filter(User.id == user_uuid).first()
+                except ValueError:
+                    # 如果不是 UUID 格式，可能是 google_id
+                    user = db.query(User).filter(User.google_id == request.user_id).first()
+
+                if user:
+                    print(f"[DEBUG] Found user: {user.name} ({user.email})")
+                else:
+                    print(f"[DEBUG] User not found for user_id: {request.user_id}")
+
             # 每次請求建立新的 session service 和 runner
             local_session_service = InMemorySessionService()
 
@@ -66,12 +84,23 @@ async def chat(request: ChatRequest, db: Session = Depends(get_db)):
                 yield 'data: {"type":"error","error":"No message provided"}\n\n'
                 return
 
-            # 建立 content
+            # 建立用戶訊息內容
+            user_text = last_message.content
+
+            # 如果有用戶資訊，在訊息前加上用戶資訊（只在新對話或第一則訊息時）
+            # 判斷是否為新對話：沒有 conversation_id 或是第一則訊息
+            is_new_conversation = not request.conversation_id or len(request.messages) == 1
+
+            if user and is_new_conversation:
+                user_context = f"[系統資訊] 當前用戶：{user.name}（{user.email}）\n\n{user_text}"
+                user_text = user_context
+                print(f"[DEBUG] Injected user context for {user.name}")
+
             content = types.Content(
                 role="user",
-                parts=[types.Part(text=last_message.content)],
+                parts=[types.Part(text=user_text)],
             )
-            print(f"[DEBUG] Content created: {content}")
+            print(f"[DEBUG] Content created")
 
             # 執行 agent
             user_id = request.user_id or "anonymous"

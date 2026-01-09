@@ -128,13 +128,24 @@ async def chat(request: ChatRequest, db: Session = Depends(get_db)):
 
             full_response = ""
             event_count = 0
+            current_agent = None
             async for event in runner.run_async(
                 user_id=user_id,
                 session_id=session_id,
                 new_message=content,
             ):
                 event_count += 1
-                print(f"[DEBUG] Event #{event_count}: {type(event).__name__}")
+
+                # 追蹤 agent 切換
+                event_agent = getattr(event, 'agent_name', None) or getattr(event, 'agent', None)
+                if event_agent and event_agent != current_agent:
+                    current_agent = event_agent
+                    agent_name = current_agent.name if hasattr(current_agent, 'name') else str(current_agent)
+                    print(f"[DEBUG] 🔄 Agent switched to: {agent_name}")
+
+                # 顯示 event 類型和 agent
+                agent_info = f" (agent: {current_agent.name if hasattr(current_agent, 'name') else current_agent})" if current_agent else ""
+                print(f"[DEBUG] Event #{event_count}: {type(event).__name__}{agent_info}")
 
                 if event.content and event.content.parts:
                     for part in event.content.parts:

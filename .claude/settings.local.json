@@ -17,7 +17,14 @@
       "Bash(ls:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git ls-tree:*)"
+      "Bash(git ls-tree:*)",
+      "WebSearch",
+      "Bash(curl:*)",
+      "Bash(python3 -c:*)",
+      "Bash(pip3 install:*)",
+      "mcp__metamcp__Playwright__playwright_navigate",
+      "Bash(python3:*)",
+      "Bash(lsof:*)"
     ]
   }
 }

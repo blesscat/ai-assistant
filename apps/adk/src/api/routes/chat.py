@@ -8,13 +8,13 @@ from sqlalchemy.orm import Session
 from sse_starlette.sse import EventSourceResponse
 
 from google.adk import Runner
-from google.adk.sessions import InMemorySessionService
 from google.genai import types
 
 from ...db.session import get_db
 from ...db.models import User
 from ...agents.root_agent import root_agent
 from ...services.token_service import TokenService
+from ...services.session_service import get_session_service
 
 
 router = APIRouter(prefix="/api", tags=["chat"])
@@ -67,33 +67,58 @@ async def chat(request: ChatRequest, db: Session = Depends(get_db)):
                 else:
                     print(f"[DEBUG] User not found for user_id: {request.user_id}")
 
-            # 每次請求建立新的 session service 和 runner
-            local_session_service = InMemorySessionService()
+            # 使用全局 session service，避免每次創建新的
+            session_service = get_session_service()
 
             # 建立 Runner (API key 已在 root_agent.py 中設定為環境變數)
             runner = Runner(
                 app_name="agents",
                 agent=root_agent,
-                session_service=local_session_service,
+                session_service=session_service,
             )
             print("[DEBUG] Runner created")
 
-            # 取得最後一則訊息
+            # 使用 conversation_id 作為 session_id，確保同一個對話共用同一個 session
+            user_id = request.user_id or "anonymous"
+            session_id = request.conversation_id or str(uuid.uuid4())
+            print(f"[DEBUG] Using session_id={session_id} (from conversation_id)")
+
+            # 判斷是否為新對話（第一則訊息）
+            is_new_conversation = len(request.messages) == 1
+
+            # 檢查 session 是否已存在
+            try:
+                existing_session = await session_service.get_session(
+                    app_name="agents",
+                    user_id=user_id,
+                    session_id=session_id,
+                )
+                print(f"[DEBUG] Existing session found: {existing_session is not None}")
+            except:
+                existing_session = None
+                print("[DEBUG] No existing session, will create new one")
+
+            # 如果是新 session，創建並注入用戶資訊
+            if not existing_session:
+                session = await session_service.create_session(
+                    app_name="agents",
+                    user_id=user_id,
+                    session_id=session_id,
+                )
+                print(f"[DEBUG] New session created: {session}")
+
+            # 取得最後一則訊息（當前用戶輸入）
             last_message = request.messages[-1] if request.messages else None
             if not last_message:
                 yield 'data: {"type":"error","error":"No message provided"}\n\n'
                 return
 
-            # 建立用戶訊息內容
+            # 建立當前訊息內容
             user_text = last_message.content
 
-            # 如果有用戶資訊，在訊息前加上用戶資訊（只在新對話或第一則訊息時）
-            # 判斷是否為新對話：沒有 conversation_id 或是第一則訊息
-            is_new_conversation = not request.conversation_id or len(request.messages) == 1
-
-            if user and is_new_conversation:
-                user_context = f"[系統資訊] 當前用戶：{user.name}（{user.email}）\n\n{user_text}"
-                user_text = user_context
+            # 如果是新對話且有用戶資訊，注入用戶資訊
+            if is_new_conversation and user:
+                user_text = f"[系統資訊] 當前用戶：{user.name}（{user.email}）\n\n{user_text}"
                 print(f"[DEBUG] Injected user context for {user.name}")
 
             content = types.Content(
@@ -101,19 +126,6 @@ async def chat(request: ChatRequest, db: Session = Depends(get_db)):
                 parts=[types.Part(text=user_text)],
             )
             print(f"[DEBUG] Content created")
-
-            # 執行 agent
-            user_id = request.user_id or "anonymous"
-            session_id = str(uuid.uuid4())
-            print(f"[DEBUG] Creating session with user_id={user_id}, session_id={session_id}")
-
-            # 先建立 session
-            session = await local_session_service.create_session(
-                app_name="agents",
-                user_id=user_id,
-                session_id=session_id,
-            )
-            print(f"[DEBUG] Session created: {session}")
 
             # 生成唯一的 message ID
             message_id = str(uuid.uuid4())

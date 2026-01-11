@@ -3,13 +3,17 @@
 import { useSession } from 'next-auth/react'
 import { redirect } from 'next/navigation'
 import { ChatContainer } from '@/components/chat/chat-container'
+import { Sidebar } from '@/components/chat/sidebar'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { LogOut, User } from 'lucide-react'
+import { LogOut, User, Menu } from 'lucide-react'
 import { signOut } from 'next-auth/react'
+import { useAtom } from 'jotai'
+import { sidebarOpenAtom } from '@/atoms/ui-atoms'
 
 export default function Home() {
   const { data: session, status } = useSession()
+  const [sidebarOpen, setSidebarOpen] = useAtom(sidebarOpenAtom)
 
   if (status === 'loading') {
     return (
@@ -27,7 +31,12 @@ export default function Home() {
     <div className="flex h-screen flex-col">
       {/* Header */}
       <header className="bg-background flex items-center justify-between border-b px-4 py-3">
-        <h1 className="text-xl font-semibold">AI 助理</h1>
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSidebarOpen(true)}>
+            <Menu className="h-4 w-4" />
+          </Button>
+          <h1 className="text-xl font-semibold">AI 助理</h1>
+        </div>
 
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
@@ -46,8 +55,11 @@ export default function Home() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-hidden">
-        <ChatContainer />
+      <main className="flex flex-1 overflow-hidden">
+        <Sidebar />
+        <div className="flex-1 overflow-hidden">
+          <ChatContainer />
+        </div>
       </main>
     </div>
   )
